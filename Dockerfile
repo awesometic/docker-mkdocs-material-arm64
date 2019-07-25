@@ -18,7 +18,17 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-FROM python:3.6.8-alpine3.9
+# To set multiarch build for Docker hub automated build.
+FROM golang:alpine AS builder
+LABEL maintainer="Yang Deokgyu <secugyu@gmail.com>" \
+      description="A Material for MkDocs port for arm64v8 platform."
+
+WORKDIR /go
+RUN apk add curl --no-cache
+RUN curl -L https://github.com/balena-io/qemu/releases/download/v3.0.0%2Bresin/qemu-3.0.0+resin-aarch64.tar.gz | tar zxvf - -C . && mv qemu-3.0.0+resin-aarch64/qemu-aarch64-static .
+
+FROM arm64v8/python:3.6-alpine3.9
+COPY --from=builder /go/qemu-aarch64-static /usr/bin/
 
 # Set build directory
 WORKDIR /tmp
